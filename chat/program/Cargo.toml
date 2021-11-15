@@ -1,0 +1,13 @@
+[package]
+name = "chat-app-program"
+version = "0.1.0"
+license = "Apache-2.0"
+edition = "2018"
+
+[features]
+no-entrypoint = []
+
+[dependencies]
+solana-program = "1.8.1"
+borsh = "0.9.1"
+borsh-derive = "0.9.1"
