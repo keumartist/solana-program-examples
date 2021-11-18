@@ -1,0 +1,15 @@
+[package]
+name = "solana-name-service"
+description = "Solana Program Library Name Service"
+version = "0.1.0"
+edition = "2018"
+
+[features]
+no-entrypoint = []
+
+[dependencies]
+solana-program = "1.8.1"
+borsh = "0.9.1"
+thiserror = "1.0.29"
+num-traits = "0.2"
+num-derive = "0.3.3"
