@@ -13,3 +13,6 @@ borsh = "0.9.1"
 thiserror = "1.0.29"
 num-traits = "0.2"
 num-derive = "0.3.3"
+
+[lib]
+crate-type = ["cdylib", "lib"]
