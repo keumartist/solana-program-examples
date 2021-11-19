@@ -2,12 +2,15 @@ use {
     solana_program::{
         account_info::AccountInfo,
         entrypoint::ProgramResult,
+        entrypoint,
         msg,
         program_error::PrintProgramError,
-        pubkey::Pubkey
+        pubkey::Pubkey,
+        decode_error::DecodeError, 
     },
     crate::error::NameServiceError,
-    // crate::processor::Processor,
+    crate::processor::Processor,
+    num_traits::FromPrimitive,
 };
 
 entrypoint!(process_instruction);
@@ -23,4 +26,16 @@ pub fn process_instruction(
         return Err(error);
     }
     Ok(())
+}
+
+impl PrintProgramError for NameServiceError {
+    fn print<E>(&self)
+    where
+        E: 'static + std::error::Error + DecodeError<E> + PrintProgramError + FromPrimitive
+    {
+        match self {
+            NameServiceError::OutOfSpace => msg!("Error: Registry is out of space!"),
+        }
+    }
+
 }

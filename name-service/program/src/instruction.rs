@@ -1,13 +1,14 @@
 use {
     borsh::{BorshDeserialize, BorshSerialize},
     solana_program::{
-        instruction::{AccountMeta, Instrcution},
+        instruction::{AccountMeta, Instruction},
         program_error::ProgramError,
         pubkey::Pubkey,
         system_program
     },
 };
 
+#[derive(BorshDeserialize, BorshSerialize)]
 pub enum NameRegistryInstruction {
     /// Create an empty name record
     ///
@@ -50,7 +51,7 @@ pub fn create(
     name_class_opt: Option<Pubkey>,
     name_parent_opt: Option<Pubkey>,
     name_parent_owner_opt: Option<Pubkey>,
-) -> Result<Instrucrion, ProgramError> {
+) -> Result<Instruction, ProgramError> {
     let data = instruction_data.try_to_vec().unwrap();
 
     let mut accounts = vec![
@@ -60,7 +61,7 @@ pub fn create(
         AccountMeta::new_readonly(name_owner, false)
     ];
 
-    if let Some(name_class) = name_class_sopt {
+    if let Some(name_class) = name_class_opt {
         accounts.push(AccountMeta::new_readonly(name_class, true));
     } else {
         accounts.push(AccountMeta::new_readonly(Pubkey::default(), false));
@@ -73,7 +74,7 @@ pub fn create(
     }
 
     if let Some(key) = name_parent_owner_opt {
-        accounts.push(AccountMeta::new_readonly(key, ture));
+        accounts.push(AccountMeta::new_readonly(key, true));
     }
 
     Ok(Instruction {

@@ -28,15 +28,16 @@ pub struct NameRecordHeader {
     pub class: Pubkey,
 }
 
-
 impl Sealed for NameRecordHeader {}
 
 impl Pack for NameRecordHeader {
     const LEN: usize = 96; // Pubkey(32) * 3
 
     fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
-        NameRecordHeader::deserialize(&mut src).map_err(|err| {
-            msg!("Failed to deserialize name record");
+        let mut p = src;
+        
+        NameRecordHeader::deserialize(&mut p).map_err(|err| {
+            msg!("Failed to deserialize name record. {:?}", err);
             ProgramError::InvalidAccountData
         })
     }
@@ -45,4 +46,41 @@ impl Pack for NameRecordHeader {
         let mut slice = dst;
         self.serialize(&mut slice).unwrap()
     }
+}
+
+impl IsInitialized for NameRecordHeader {
+    fn is_initialized(&self) -> bool {
+        self.owner == Pubkey::default()
+    }
+}
+
+pub fn write_data(account: &AccountInfo, input: &[u8], offset: usize) {
+    let mut account_data = account.data.borrow_mut();
+    account_data[offset..offset + input.len()].copy_from_slice(input);
+}
+
+pub const HASH_PREFIX: &str = "SPLKeum Name Service";
+
+pub fn get_seeds_and_key(
+    program_id: &Pubkey,
+    hashed_name: Vec<u8>, // Hashing is done off-chain
+    name_class_opt: Option<&Pubkey>,
+    parent_name_address_opt: Option<&Pubkey>,
+) -> (Pubkey, Vec<u8>) {
+    let mut seeds_vec = hashed_name;
+    let name_class = name_class_opt.cloned().unwrap_or_default();
+
+    for b in name_class.to_bytes().to_vec() {
+        seeds_vec.push(b);
+    }
+
+    let parent_name_address = parent_name_address_opt.cloned().unwrap_or_default();
+
+    for b in parent_name_address.to_bytes().to_vec() {
+        seeds_vec.push(b);
+    }
+
+    let (name_account_key, _) = Pubkey::find_program_address(&seeds_vec.chunks(32).collect::<Vec<&[u8]>>(), program_id);
+
+    (name_account_key, seeds_vec)
 }

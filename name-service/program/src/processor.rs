@@ -2,7 +2,9 @@ use {
     crate::{
         instruction::NameRegistryInstruction,
         state::get_seeds_and_key,
-        state::{write_data, NameRecordHeader},
+        state::{
+            NameRecordHeader
+        },
     },
     // borsh::BorshDeserialize,
     solana_program::{
@@ -15,9 +17,8 @@ use {
         pubkey::Pubkey,
         system_instruction,
     },
+    borsh::BorshDeserialize,
 };
-
-
 
 pub struct Processor {}
 
@@ -31,7 +32,7 @@ impl Processor {
         let instruction = NameRegistryInstruction::try_from_slice(instruction_data).map_err(|err| {
             msg!("error : {:?}", err);
             return ProgramError::InvalidInstructionData
-        });
+        })?;
 
         match instruction {
             NameRegistryInstruction::Create {
@@ -42,11 +43,8 @@ impl Processor {
                 msg!("Instruction: Create");
                 Processor::process_create(program_id, accounts, hashed_name, lamports, space)?;
             } 
-            _ => {
-                msg!("Instruction: Create");
-                Processor::process_create(program_id, accounts, hashed_name, lamports, space)?; 
-            }
         }
+        Ok(())
     }
 
     pub fn process_create(
@@ -92,7 +90,7 @@ impl Processor {
             return Err(ProgramError::InvalidArgument);
         }
 
-        if parent_name_account.key != Pubkey::default() {
+        if *parent_name_account.key != Pubkey::default() {
             if !parent_name_owner.is_signer {
                 msg!("The given parent name account owner is not a signer");
                 return Err(ProgramError::InvalidArgument);
@@ -145,6 +143,9 @@ impl Processor {
             class: *name_class.key
         };
 
+        name_state.pack_into_slice(&mut name_account.data.borrow_mut());
+        
+        Ok(())
     }
 
     // pub fn process_update()
