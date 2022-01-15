@@ -1,2 +1,5 @@
 .vscode
 target/
+.DS_store
+node_modules
+
